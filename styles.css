@@ -1,0 +1,142 @@
+:root {
+  --color-bg: #f7f7f5;
+  --color-card: #ffffff;
+  --color-border: #e2e2df;
+  --color-text: #2b2b28;
+  --color-text-sub: #6b6b66;
+  --color-accent: #3a6b5c;
+  --color-warn: #b3512e;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  line-height: 1.7;
+}
+h1 { font-size: 1.4rem; margin-bottom: 4px; }
+h2 { font-size: 1.1rem; margin: 0 0 12px; }
+h3 { font-size: 1rem; margin: 20px 0 8px; }
+.sub { color: var(--color-text-sub); font-size: 0.9rem; }
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+}
+label.field-label { display: block; font-size: 0.85rem; color: var(--color-text-sub); margin-bottom: 4px; }
+input[type="text"], select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+.task-card {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  position: relative;
+}
+.task-card .remove-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  background: none;
+  color: var(--color-text-sub);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.reason-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 8px 2px 0;
+  font-size: 0.85rem;
+}
+button {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+button.secondary {
+  background: #fff;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+button:disabled { opacity: 0.6; cursor: default; }
+.note-box {
+  background: #f1f4f1;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+}
+.result-item {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 10px;
+}
+.result-item .task-name { font-weight: bold; }
+.prototype-area { margin-top: 10px; }
+.prototype-frame {
+  width: 100%;
+  height: 420px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  margin-top: 8px;
+  background: #fff;
+}
+.prototype-actions { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+.prototype-consult {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  background: #fff8ec;
+  border-left: 3px solid var(--color-warn);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.disclaimer { font-size: 0.75rem; color: var(--color-text-sub); margin-top: 24px; }
+
+/* モード切り替えタブ */
+.mode-tabs { display: flex; gap: 8px; margin-top: 16px; }
+.mode-tab {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-text);
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.mode-tab.active {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+.enterprise-placeholder {
+  text-align: center;
+  padding: 12px 0;
+}
+
+/* 自由記述の注意書き */
+.free-text-caution {
+  font-size: 0.78rem;
+  color: var(--color-warn);
+  margin-top: -8px;
+  margin-bottom: 12px;
+}
