@@ -5,7 +5,30 @@
 // その業種を初期選択した状態で表示する。
 
 const AI_RELAY_URL = 'https://engineer-ai-relay.quruquru99999.workers.dev';
-const CONSULT_EMAIL = 'quruquru99999@gmail.com';
+
+// 相談先の切り替え口。今はメールだが、将来ここを type: 'url' + url（例：ココナラの出品ページ）に
+// 差し替えるだけで、アプリ内の相談リンクがすべてそちらに切り替わる。
+const CONSULT_TARGET = {
+  type: 'email', // 'email' | 'url'
+  email: 'quruquru99999@gmail.com',
+  url: null, // 例: 'https://coconala.com/services/xxxxxx'
+};
+
+function consultHref(subject, body) {
+  if (CONSULT_TARGET.type === 'url' && CONSULT_TARGET.url) {
+    return CONSULT_TARGET.url;
+  }
+  const params = [];
+  if (subject) params.push('subject=' + encodeURIComponent(subject));
+  if (body) params.push('body=' + encodeURIComponent(body));
+  return `mailto:${CONSULT_TARGET.email}` + (params.length ? '?' + params.join('&') : '');
+}
+
+function consultLabel() {
+  return CONSULT_TARGET.type === 'url' && CONSULT_TARGET.url
+    ? 'ご相談ください'
+    : `${CONSULT_TARGET.email} に相談する`;
+}
 
 let mode = 'individual'; // 'individual' | 'enterprise'
 let taskCounter = 0;
@@ -42,7 +65,7 @@ function enterpriseHtml() {
       <h2>会社で使う</h2>
       <p class="sub">従業員の回答を集計して、会社全体の負担が大きい業務から改善提案・試作品を作る機能を準備中です。</p>
       <p class="sub">ご興味があれば、まずはご相談ください。一緒に業務内容をヒアリングしながら進めます。</p>
-      <a href="mailto:${CONSULT_EMAIL}?subject=${encodeURIComponent('エンジニアAI 会社での利用について相談')}"><button type="button">${CONSULT_EMAIL} に相談する</button></a>
+      <a href="${consultHref('エンジニアAI 会社での利用について相談')}"><button type="button">${consultLabel()}</button></a>
     </div>
   `;
 }
@@ -286,18 +309,19 @@ function renderPrototypeResult(area, data) {
   const safeHtml = injectSafetyBanner(injectCsp(data.html));
   const blobUrl = URL.createObjectURL(new Blob([safeHtml], { type: 'text/html' }));
   const filename = data.filename || 'prototype.html';
-  const subject = encodeURIComponent('エンジニアAI 試作品について相談');
-  const body = encodeURIComponent(`「${data.description || ''}」の試作品について相談したいです。\n\n（差し支えなければ、業種・やりたいことを教えてください）`);
+  const subject = 'エンジニアAI 試作品について相談';
+  const body = `「${data.description || ''}」の試作品について相談したいです。\n\n（差し支えなければ、業種・やりたいことを教えてください）`;
 
   area.innerHTML = `
     <p class="sub proto-description"></p>
     <div class="proto-frame-slot"></div>
-    <div class="prototype-actions">
-      <a href="${blobUrl}" download="${filename}"><button class="secondary" type="button">HTMLをダウンロード</button></a>
+    <div class="prototype-download">
+      <a href="${blobUrl}" download="${filename}"><button type="button" class="prototype-download-btn">このツールをダウンロードして使う</button></a>
+      <p class="sub prototype-usage-hint">ダウンロードしたファイルをダブルクリックすると、ブラウザで開いて使えます。</p>
     </div>
     <div class="prototype-consult">
-      これはAIが作った試作品です。本番で使える形にしたい場合はご相談ください。<br>
-      <a href="mailto:${CONSULT_EMAIL}?subject=${subject}&body=${body}">${CONSULT_EMAIL} に相談する</a>
+      自社の業務に合わせて作り込みたい場合は
+      <a href="${consultHref(subject, body)}">${consultLabel()}</a>
     </div>
   `;
   area.querySelector('.proto-description').textContent = data.description || '';

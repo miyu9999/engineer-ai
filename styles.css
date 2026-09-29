@@ -99,15 +99,20 @@ button:disabled { opacity: 0.6; cursor: default; }
   margin-top: 8px;
   background: #fff;
 }
-.prototype-actions { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
-.prototype-consult {
-  margin-top: 10px;
-  font-size: 0.85rem;
-  background: #fff8ec;
-  border-left: 3px solid var(--color-warn);
-  border-radius: 8px;
-  padding: 10px 12px;
+.prototype-download { margin-top: 12px; }
+.prototype-download-btn {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1rem;
+  font-weight: bold;
 }
+.prototype-usage-hint { margin-top: 6px; }
+.prototype-consult {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  color: var(--color-text-sub);
+}
+.prototype-consult a { color: var(--color-text-sub); }
 .disclaimer { font-size: 0.75rem; color: var(--color-text-sub); margin-top: 24px; }
 
 /* モード切り替えタブ */
