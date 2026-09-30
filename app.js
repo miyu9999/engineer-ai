@@ -316,8 +316,10 @@ function renderPrototypeResult(area, data) {
     <p class="sub proto-description"></p>
     <div class="proto-frame-slot"></div>
     <div class="prototype-download">
-      <a href="${blobUrl}" download="${filename}"><button type="button" class="prototype-download-btn">このツールをダウンロードして使う</button></a>
-      <p class="sub prototype-usage-hint">ダウンロードしたファイルをダブルクリックすると、ブラウザで開いて使えます。</p>
+      <button type="button" class="prototype-download-btn" onclick="window.open('${blobUrl}', '_blank')">このツールを開いて使う</button>
+      <p class="sub prototype-usage-hint">新しいタブで開きます。パソコンでもスマートフォンでもそのままお使いいただけます。</p>
+      <a class="prototype-save-link" href="${blobUrl}" download="${filename}">HTMLファイルとして保存する</a>
+      <p class="sub prototype-save-hint">パソコンでは保存して後から開けます。スマートフォンでは保存後に開けない場合があります。</p>
     </div>
     <div class="prototype-consult">
       自社の業務に合わせて作り込みたい場合は

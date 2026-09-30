@@ -107,6 +107,14 @@ button:disabled { opacity: 0.6; cursor: default; }
   font-weight: bold;
 }
 .prototype-usage-hint { margin-top: 6px; }
+.prototype-save-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: var(--color-text-sub);
+  text-decoration: underline;
+}
+.prototype-save-hint { margin-top: 2px; font-size: 0.75rem; }
 .prototype-consult {
   margin-top: 16px;
   font-size: 0.8rem;
