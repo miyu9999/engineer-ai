@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' 'self'; img-src data:; connect-src 'none'; form-action 'none';">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="連絡帳サポート">
+<title>連絡帳 定型文入力サポート</title>
+<style>
+  body { font-family: 'メイリオ', sans-serif; margin: 20px; background:#f7f7f7; }
+  h1 { font-size: 20px; }
+  h2 { font-size: 16px; margin-top: 30px; }
+  .box { background:#fff; padding:15px; border-radius:8px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+  label { display:block; margin-top:8px; font-size:14px; }
+  input[type=text], input[type=date], textarea, select { width:100%; padding:6px; margin-top:4px; box-sizing:border-box; font-size:14px;}
+  textarea { height:80px; }
+  .cat { margin-top:10px; }
+  .cat span { font-weight:bold; font-size:13px; }
+  .phrase-btn { display:inline-block; background:#e8f0fe; border:1px solid #a9c6f5; border-radius:4px; padding:4px 8px; margin:3px; font-size:13px; cursor:pointer; }
+  .phrase-btn:hover { background:#cfe0fb; }
+  button.main { background:#4a90d9; color:#fff; border:none; padding:8px 16px; border-radius:4px; font-size:14px; cursor:pointer; margin-top:10px; }
+  button.main:hover { background:#357abd; }
+  table { width:100%; border-collapse: collapse; margin-top:10px; background:#fff;}
+  th, td { border:1px solid #ccc; padding:6px; font-size:13px; text-align:left; vertical-align:top;}
+  th { background:#eee; }
+  .add-phrase { display:flex; gap:6px; margin-top:6px; }
+  .add-phrase input { flex:1; }
+  .add-phrase select { width:120px; }
+  .add-phrase button { padding:6px 10px; }
+  #csvBtn { background:#5cb85c; }
+  #csvBtn:hover { background:#4a9d4a; }
+</style>
+</head>
+<body><div style="background:#fff3cd;color:#664d03;padding:8px 12px;font-size:12px;font-family:sans-serif;border-bottom:1px solid #ffe69c;">⚠️ これはAIが作った試作品です。実在する方の氏名・個人情報は入力しないでください（見本のダミーデータでお試しください）。</div>
+
+<h1>連絡帳 定型文入力サポート</h1>
+<p style="font-size:13px;color:#555;">よく使う表現をボタンで呼び出し、本文欄に差し込めます。園児名は「園児A」のような仮名でご入力ください。</p>
+
+<div class="box">
+  <h2>定型文カテゴリ</h2>
+  <div id="categories"></div>
+
+  <h2>定型文を追加する</h2>
+  <div class="add-phrase">
+    <select id="newCatSelect"></select>
+    <input type="text" id="newPhraseText" placeholder="例：ぐっすり眠っていました">
+    <button class="main" onclick="addPhrase()">追加</button>
+  </div>
+</div>
+
+<div class="box">
+  <h2>連絡帳の作成</h2>
+  <label>日付
+    <input type="date" id="entryDate">
+  </label>
+  <label>園児名（仮名）
+    <input type="text" id="childName" placeholder="例：園児A">
+  </label>
+  <label>本文
+    <textarea id="bodyText" placeholder="上の定型文ボタンをクリックすると、ここに文章が追加されます。自由に書き足すこともできます。"></textarea>
+  </label>
+  <button class="main" onclick="clearBody()">本文をクリア</button>
+  <button class="main" onclick="saveEntry()">この内容を一覧に保存</button>
+</div>
+
+<div class="box">
+  <h2>作成済み連絡帳一覧</h2>
+  <table id="entryTable">
+    <thead>
+      <tr><th>日付</th><th>園児名</th><th>本文</th><th>削除</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button class="main" id="csvBtn" onclick="downloadCSV()">CSVダウンロード</button>
+</div>
+
+<script>
+// カテゴリと定型文の初期データ
+var phrases = {
+  "睡眠": ["ぐっすり眠っていました", "少し寝つきが悪かったです", "お昼寝はしませんでした", "いつも通りの時間に眠れました"],
+  "食事": ["完食しました", "半分ほど食べました", "あまり食が進みませんでした", "おかわりして食べていました"],
+  "体調": ["元気に過ごしていました", "少し鼻水が出ていました", "体温はいつも通りでした", "咳が少し出ていました"],
+  "機嫌・様子": ["お友達と楽しく遊んでいました", "笑顔で過ごしていました", "少し甘えん坊でした", "集中して製作activityに取り組んでいました"]
+};
+
+var entries = [];
+
+function renderCategories() {
+  var container = document.getElementById("categories");
+  container.innerHTML = "";
+  for (var cat in phrases) {
+    var div = document.createElement("div");
+    div.className = "cat";
+    var label = document.createElement("span");
+    label.textContent = cat + "：";
+    div.appendChild(label);
+    phrases[cat].forEach(function(p, idx) {
+      var btn = document.createElement("span");
+      btn.className = "phrase-btn";
+      btn.textContent = p;
+      btn.onclick = (function(text) {
+        return function() { insertPhrase(text); };
+      })(p);
+      div.appendChild(btn);
+    });
+    container.appendChild(div);
+  }
+  updateCatSelect();
+}
+
+function updateCatSelect() {
+  var sel = document.getElementById("newCatSelect");
+  sel.innerHTML = "";
+  for (var cat in phrases) {
+    var opt = document.createElement("option");
+    opt.value = cat;
+    opt.textContent = cat;
+    sel.appendChild(opt);
+  }
+}
+
+function insertPhrase(text) {
+  var body = document.getElementById("bodyText");
+  if (body.value.length > 0 && !body.value.endsWith("\n") && !body.value.endsWith("。")) {
+    body.value += "。";
+  }
+  body.value += text + "。";
+}
+
+function addPhrase() {
+  var cat = document.getElementById("newCatSelect").value;
+  var text = document.getElementById("newPhraseText").value.trim();
+  if (!text) { alert("追加する文言を入力してください"); return; }
+  if (!phrases[cat]) phrases[cat] = [];
+  phrases[cat].push(text);
+  document.getElementById("newPhraseText").value = "";
+  renderCategories();
+}
+
+function clearBody() {
+  document.getElementById("bodyText").value = "";
+}
+
+function saveEntry() {
+  var date = document.getElementById("entryDate").value;
+  var name = document.getElementById("childName").value.trim();
+  var body = document.getElementById("bodyText").value.trim();
+  if (!date || !name || !body) {
+    alert("日付・園児名・本文をすべて入力してください");
+    return;
+  }
+  entries.push({ date: date, name: name, body: body });
+  document.getElementById("childName").value = "";
+  document.getElementById("bodyText").value = "";
+  renderTable();
+}
+
+function deleteEntry(idx) {
+  entries.splice(idx, 1);
+  renderTable();
+}
+
+function renderTable() {
+  var tbody = document.querySelector("#entryTable tbody");
+  tbody.innerHTML = "";
+  entries.forEach(function(e, idx) {
+    var tr = document.createElement("tr");
+    var tdDate = document.createElement("td");
+    tdDate.textContent = e.date;
+    var tdName = document.createElement("td");
+    tdName.textContent = e.name;
+    var tdBody = document.createElement("td");
+    tdBody.textContent = e.body;
+    var tdDel = document.createElement("td");
+    var delBtn = document.createElement("button");
+    delBtn.textContent = "削除";
+    delBtn.onclick = (function(i){ return function(){ deleteEntry(i); }; })(idx);
+    tdDel.appendChild(delBtn);
+    tr.appendChild(tdDate);
+    tr.appendChild(tdName);
+    tr.appendChild(tdBody);
+    tr.appendChild(tdDel);
+    tbody.appendChild(tr);
+  });
+}
+
+function downloadCSV() {
+  var header = ["日付", "園児名", "本文"];
+  var rows = entries.map(function(e) {
+    return [e.date, e.name, e.body.replace(/\n/g, " ")];
+  });
+  var csv = header.join(",") + "\n" + rows.map(function(r) {
+    return r.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(",");
+  }).join("\n");
+  var blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = "連絡帳一覧.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+renderCategories();
+renderTable();
+</script>
+
+</body>
+</html>

@@ -322,7 +322,7 @@ function renderPrototypeResult(area, data) {
       <p class="sub prototype-save-hint">パソコンでは保存して後から開けます。スマートフォンでは保存後に開けない場合があります。</p>
     </div>
     <div class="prototype-consult">
-      自社の業務に合わせて作り込みたい場合は
+      スマホのホーム画面に追加して毎日使えるようにしたい、自社の業務に合わせて作り込みたい場合は
       <a href="${consultHref(subject, body)}">${consultLabel()}</a>
     </div>
   `;

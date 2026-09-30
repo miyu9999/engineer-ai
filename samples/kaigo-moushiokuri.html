@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' 'self'; img-src data:; connect-src 'none'; form-action 'none';">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="申し送り記録">
+<title>申し送り記録支援ツール</title>
+<style>
+  body { font-family: "メイリオ", sans-serif; margin: 20px; background:#f5f5f5; }
+  h1 { font-size: 20px; }
+  .box { background:#fff; padding:15px; border-radius:6px; margin-bottom:15px; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+  label { display:inline-block; width:90px; margin-bottom:6px; }
+  select, input[type=text], input[type=date], input[type=time] { padding:4px; margin-bottom:8px; }
+  textarea { width:100%; height:70px; padding:6px; box-sizing:border-box; }
+  .phrase-btn { background:#e0e0e0; border:none; padding:5px 8px; margin:2px; border-radius:4px; cursor:pointer; font-size:12px; }
+  .phrase-btn:hover { background:#ccc; }
+  table { border-collapse:collapse; width:100%; margin-top:10px; background:#fff; }
+  th, td { border:1px solid #ccc; padding:6px; font-size:13px; text-align:left; vertical-align:top; }
+  th { background:#eee; }
+  button.main { background:#3a7bd5; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; }
+  button.main:hover { background:#2f63ab; }
+  .del-btn { background:#d9534f; color:#fff; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; }
+  .csv-btn { background:#5cb85c; color:#fff; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; margin-top:10px; }
+</style>
+</head>
+<body><div style="background:#fff3cd;color:#664d03;padding:8px 12px;font-size:12px;font-family:sans-serif;border-bottom:1px solid #ffe69c;">⚠️ これはAIが作った試作品です。実在する方の氏名・個人情報は入力しないでください（見本のダミーデータでお試しください）。</div>
+<h1>申し送り記録支援ツール</h1>
+
+<div class="box">
+  <div>
+    <label>日付</label><input type="date" id="inDate">
+    <label>時刻</label><input type="time" id="inTime">
+  </div>
+  <div>
+    <label>利用者</label>
+    <select id="inUser">
+      <option>利用者A</option>
+      <option>利用者B</option>
+      <option>利用者C</option>
+      <option>利用者D</option>
+    </select>
+    <label>記録者</label>
+    <input type="text" id="inStaff" placeholder="職員名(仮名可)">
+  </div>
+  <div>
+    <label>カテゴリ</label>
+    <select id="inCategory">
+      <option>食事</option>
+      <option>排泄</option>
+      <option>入浴</option>
+      <option>体調</option>
+      <option>様子・活動</option>
+      <option>その他</option>
+    </select>
+  </div>
+
+  <div>
+    <p style="margin:4px 0;">よく使う定型文（クリックで下の欄に挿入）</p>
+    <button class="phrase-btn" onclick="addPhrase('食事は全量摂取されました。')">食事全量</button>
+    <button class="phrase-btn" onclick="addPhrase('食事は半分程度の摂取でした。')">食事半分</button>
+    <button class="phrase-btn" onclick="addPhrase('食事はほとんど摂取されませんでした。')">食事少量</button>
+    <button class="phrase-btn" onclick="addPhrase('排泄はいつも通りでした。')">排泄いつも通り</button>
+    <button class="phrase-btn" onclick="addPhrase('排泄あり、記録用紙に記載済みです。')">排泄記録済</button>
+    <button class="phrase-btn" onclick="addPhrase('入浴を実施しました。皮膚状態に変化はありませんでした。')">入浴実施</button>
+    <button class="phrase-btn" onclick="addPhrase('体温を測定しました。')">体温測定</button>
+    <button class="phrase-btn" onclick="addPhrase('日中は穏やかに過ごされていました。')">穏やかに過ごす</button>
+    <button class="phrase-btn" onclick="addPhrase('レクリエーションに参加されました。')">レク参加</button>
+    <button class="phrase-btn" onclick="addPhrase('ご家族より連絡があった旨、申し送ります。')">家族連絡あり</button>
+    <button class="phrase-btn" onclick="addPhrase('次回訪問時に経過を確認してください。')">次回確認依頼</button>
+  </div>
+
+  <label style="width:auto;">詳細メモ</label>
+  <textarea id="inMemo" placeholder="定型文をクリックすると追加されます。自由に編集・追記できます。"></textarea>
+
+  <div style="margin-top:10px;">
+    <button class="main" onclick="addRecord()">記録を追加</button>
+  </div>
+</div>
+
+<div class="box">
+  <h2 style="font-size:16px;">申し送り一覧</h2>
+  <table id="recordTable">
+    <thead>
+      <tr>
+        <th>日付</th><th>時刻</th><th>利用者</th><th>記録者</th><th>カテゴリ</th><th>詳細</th><th>削除</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <button class="csv-btn" onclick="downloadCSV()">CSVダウンロード</button>
+</div>
+
+<script>
+let records = [];
+
+function addPhrase(text){
+  const memo = document.getElementById('inMemo');
+  if(memo.value.trim().length > 0){
+    memo.value += (memo.value.endsWith('\n') ? '' : '\n') + text;
+  } else {
+    memo.value = text;
+  }
+}
+
+function addRecord(){
+  const date = document.getElementById('inDate').value;
+  const time = document.getElementById('inTime').value;
+  const user = document.getElementById('inUser').value;
+  const staff = document.getElementById('inStaff').value;
+  const category = document.getElementById('inCategory').value;
+  const memo = document.getElementById('inMemo').value;
+
+  if(!date || !time || !memo.trim()){
+    alert('日付・時刻・詳細メモは入力してください。');
+    return;
+  }
+
+  records.push({date, time, user, staff, category, memo});
+  renderTable();
+
+  // メモだけクリア（他は連続入力しやすいよう保持）
+  document.getElementById('inMemo').value = '';
+}
+
+function deleteRecord(idx){
+  records.splice(idx, 1);
+  renderTable();
+}
+
+function renderTable(){
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  records.forEach((r, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(r.date)}</td>
+      <td>${escapeHtml(r.time)}</td>
+      <td>${escapeHtml(r.user)}</td>
+      <td>${escapeHtml(r.staff)}</td>
+      <td>${escapeHtml(r.category)}</td>
+      <td style="white-space:pre-wrap;">${escapeHtml(r.memo)}</td>
+      <td><button class="del-btn" onclick="deleteRecord(${idx})">削除</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function escapeHtml(str){
+  if(!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function downloadCSV(){
+  if(records.length === 0){
+    alert('記録がありません。');
+    return;
+  }
+  let csv = '\uFEFF' + '日付,時刻,利用者,記録者,カテゴリ,詳細\n';
+  records.forEach(r => {
+    const row = [r.date, r.time, r.user, r.staff, r.category, r.memo.replace(/\n/g,' ')]
+      .map(v => '"' + (v||'').replace(/"/g,'""') + '"').join(',');
+    csv += row + '\n';
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '申し送り記録.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

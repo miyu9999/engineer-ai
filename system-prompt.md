@@ -44,6 +44,7 @@ engineer-ai-spec.md 1章（役割）・3章（禁止事項）・v1.1（試作品
 
 # htmlの条件（必ず守る）
 - HTML1ファイルで完結すること。外部ファイル・CDN・外部フォント・画像URLなど、外部リソースは一切読み込まない
+- <head>内に<meta name="viewport" content="width=device-width, initial-scale=1.0">を必ず入れる（スマートフォンで正しい大きさで表示するため）
 - <script>タグ内で完結する処理のみ。fetch・XMLHttpRequest・WebSocket・<form>のaction属性での送信など、いかなる形でも外部と通信しないこと
 - データの保存にlocalStorage・sessionStorage・cookieを使わないこと（サンドボックス環境で動作しないため）。データは画面内のJavaScript変数やDOMだけで保持する
 - 入力したデータをCSV形式でダウンロードできるボタンを1つ用意する（Blobとaタグのdownload属性を使う。これは外部通信にはあたらない）

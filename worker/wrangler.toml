@@ -4,7 +4,7 @@ compatibility_date = "2026-05-03"
 
 [vars]
 ALLOWED_ORIGIN = "https://miyu9999.github.io"
-# 公開後1週間は様子見の上限（engineer-ai-spec.md v1.1「コストと上限」参照）。
+# 公開後しばらくは様子見の上限（engineer-ai-spec.md v1.1「コストと上限」参照）。
 # 問題なければ提案15・試作品8に戻す。
 DAILY_LIMIT_TOTAL = "5"
 DAILY_LIMIT_PER_USER = "2"
